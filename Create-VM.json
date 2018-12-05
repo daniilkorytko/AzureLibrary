@@ -51,7 +51,7 @@
                         "managedDisk": {
                             "storageAccountType": "[parameters('osDiskType')]"
                         },
-                        "name": "osDisk"
+                        "name": "[concat(parameters('VirtualMachineName'), '_osDisk')]"
                     },
                     "imageReference": {
                         "publisher": "MicrosoftWindowsServer",
@@ -61,7 +61,7 @@
                     },
                     "copy": [
                         {
-                            "name": "dataDisks",
+                            "name": "_dataDisks",
                             "count": "[length(parameters('DataDisks'))]",
                             "input": {
                                 "lun": "[parameters('DataDisks')[copyIndex('dataDisks')].lun]",
