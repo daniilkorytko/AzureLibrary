@@ -32,7 +32,7 @@
     "outputs": {
         "Logs":{
             "type": "string",
-            "value": "[concat('DataDisk - ', parameters('DataDiskResources')[copyIndex()].sku,'creation was successful')]"
+            "value": "[concat('DataDisk - ', parameters('DataDiskResources')[0].sku,'creation was successful')]"
         }
     }
 }
