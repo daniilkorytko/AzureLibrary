@@ -50,7 +50,8 @@
                         "createOption": "fromImage",
                         "managedDisk": {
                             "storageAccountType": "[parameters('osDiskType')]"
-                        }
+                        },
+                        "name": "osDisk"
                     },
                     "imageReference": {
                         "publisher": "MicrosoftWindowsServer",

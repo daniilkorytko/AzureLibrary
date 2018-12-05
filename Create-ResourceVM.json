@@ -4,7 +4,7 @@
     "parameters": {
         "KeyVautsName": {
             "type": "string",
-            "defaultValue": "[concat(parameters('VirtualMachineName'),'KeyVauts')]"
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'_KeyVauts')]"
         },
         "Sku": {
             "type": "string",
@@ -54,7 +54,7 @@
         },
         "VnetName": {
             "type": "string",
-            "defaultValue": "[concat(parameters('VirtualMachineName'),'Vnet')]"
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'_Vnet')]"
         },
         "AddressPrefix": {
             "type": "string",
@@ -70,14 +70,14 @@
         },
         "NetworkSecurityGroupName": {
             "type": "string",
-            "defaultValue": "[concat(parameters('VirtualMachineName'),'networkSecurityGroup')]"
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'_networkSecurityGroup')]"
         },
         "NetworkSecurityGroupRules": {
             "type": "array"
         },
         "PublicIpAddressName": {
             "type": "string",
-            "defaultValue": "[concat(parameters('VirtualMachineName'),'publicIpAddress')]"
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'_publicIpAddress')]"
         },
         "PublicIpAddressType": {
             "type": "string",
@@ -89,7 +89,7 @@
         },
         "NetworkInterfaceName": {
             "type": "string",
-            "defaultValue": "[concat(parameters('VirtualMachineName'),'networkInterface')]" 
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'_networkInterface')]" 
         },
         "VirtualMachineName": {
             "type": "string"
@@ -107,7 +107,7 @@
                     "caching": "None",
                     "writeAcceleratorEnabled": false,
                     "id": null,
-                    "name": "[concat(parameters('VirtualMachineName'),'dataDisks')]" ,
+                    "name": "[concat(parameters('VirtualMachineName'),'_dataDisks')]" ,
                     "storageAccountType": null
                 }
             ]
@@ -116,7 +116,7 @@
             "type": "array",
             "defaultValue": [
                 {
-                    "name": "[concat(parameters('VirtualMachineName'),'dataDisks')]",
+                    "name": "[concat(parameters('VirtualMachineName'),'_dataDisks')]",
                     "diskSizeGB": 32,
                     "sku": "StandardSSD_LRS",
                     "creationData": {
@@ -134,7 +134,7 @@
         },
         "DiagnosticsStorageAccountName": {
             "type": "string",
-            "defaultValue": "daniilstorageaccount"
+            "defaultValue": "[toLower(concat(parameters('VirtualMachineName'),'_storageaccount'))]"
         },
         "DiagnosticsStorageAccountType": {
             "type": "string",
@@ -146,7 +146,7 @@
         },
         "AvailabilitySetName": {
             "type": "string",
-            "defaultValue": "AvailabilitySet"
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'_AvailabilitySet')]"
         },
         "AvailabilitySetPlatformFaultDomainCount": {
             "type": "int",

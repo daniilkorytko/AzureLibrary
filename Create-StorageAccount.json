@@ -1,0 +1,65 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "diagnosticsStorageAccountName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "diagnosticsStorageAccountKind": {
+            "type": "string"
+        },
+        "diagnosticsStorageAccountType": {
+            "type": "string"
+        },
+        "availabilitySetName": {
+            "type": "string"
+        },
+        "availabilitySetPlatformFaultDomainCount": {
+            "type": "int"
+        },
+        "availabilitySetPlatformUpdateDomainCount": {
+            "type": "int"
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('diagnosticsStorageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2018-02-01",
+            "location": "[parameters('location')]",
+            "properties": {},
+            "kind": "[parameters('diagnosticsStorageAccountKind')]",
+            "sku": {
+                "name": "[parameters('diagnosticsStorageAccountType')]"
+            },
+            "tags": {}
+        },
+        {
+            "name": "[parameters('availabilitySetName')]",
+            "type": "Microsoft.Compute/availabilitySets",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[parameters('location')]",
+            "properties": {
+                "platformFaultDomainCount": "[parameters('availabilitySetPlatformFaultDomainCount')]",
+                "platformUpdateDomainCount": "[parameters('availabilitySetPlatformUpdateDomainCount')]"
+            },
+            "sku": {
+                "name": "Aligned"
+            },
+            "tags": {}
+        }
+    ],
+    "outputs": {
+        "DiahSaName": {
+          "type": "string",
+          "value": "[resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', parameters('diagnosticsStorageAccountName'))]"
+      }, 
+        "AvalSetName": {
+        "type": "string",
+        "value": "[resourceId(resourceGroup().name, 'MMicrosoft.Compute/availabilitySets', parameters('availabilitySetName'))]"
+    }
+    }
+}
