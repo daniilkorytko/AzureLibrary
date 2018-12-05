@@ -1,0 +1,380 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "KeyVautsName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'KeyVauts')]"
+        },
+        "Sku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Standard",
+                "standard",
+                "Premium",
+                "premium"
+            ],
+            "metadata": {
+                "description": "SKU for the vault"
+            }
+        },
+        "AccessPolicies": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "The access policies defined for this vault."
+            }
+        },
+        "Tenant": {
+            "type": "string",
+            "defaultValue": "[subscription().tenantId ]"
+
+        },
+        "EnabledForDeployment": {
+            "type": "bool",
+            "defaultValue": true
+        },
+        "EnabledForTemplateDeployment": {
+            "type": "bool",
+            "defaultValue": true
+        },
+        "EnabledForDiskEncryption": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        "NetworkAcls": {
+            "type": "object",
+            "defaultValue": {
+                "defaultAction": "Allow",
+                "bypass": "AzureServices",
+                "virtualNetworkRules": [],
+                "ipRules": []
+            }
+        },
+        "VnetName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'Vnet')]"
+        },
+        "AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16"
+        },
+        "SubnetFrontEnd": {
+            "type": "string",
+            "defaultValue": "FrontEnd"
+        },
+        "SubnetFrontEndAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.1.0/24"
+        },
+        "NetworkSecurityGroupName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'networkSecurityGroup')]"
+        },
+        "NetworkSecurityGroupRules": {
+            "type": "array"
+        },
+        "PublicIpAddressName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'publicIpAddress')]"
+        },
+        "PublicIpAddressType": {
+            "type": "string",
+            "defaultValue": "Dynamic"
+        },
+        "PublicIpAddressSku": {
+            "type": "string",
+            "defaultValue": "Basic"
+        },
+        "NetworkInterfaceName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'networkInterface')]" 
+        },
+        "VirtualMachineName": {
+            "type": "string"
+        },
+        "OsDiskType": {
+            "type": "string",
+            "defaultValue":  "Premium_LRS"
+        },
+        "DataDisks": {
+            "type": "array",
+            "defaultValue": [
+                {
+                    "lun": 0,
+                    "createOption": "attach",
+                    "caching": "None",
+                    "writeAcceleratorEnabled": false,
+                    "id": null,
+                    "name": "[concat(parameters('VirtualMachineName'),'dataDisks')]" ,
+                    "storageAccountType": null
+                }
+            ]
+        },
+        "DataDiskResources": {
+            "type": "array",
+            "defaultValue": [
+                {
+                    "name": "[concat(parameters('VirtualMachineName'),'dataDisks')]",
+                    "diskSizeGB": 32,
+                    "sku": "StandardSSD_LRS",
+                    "creationData": {
+                        "createOption": "empty"
+                    }
+                }
+            ]
+        },
+        "VirtualMachineSize": {
+            "type": "string",
+            "defaultValue": "Standard_D2s_v3"
+        },
+        "AdminUsername": {
+            "type": "string"
+        },
+        "DiagnosticsStorageAccountName": {
+            "type": "string",
+            "defaultValue": "daniilstorageaccount"
+        },
+        "DiagnosticsStorageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS"
+        },
+        "DiagnosticsStorageAccountKind": {
+            "type": "string",
+            "defaultValue": "Storage"
+        },
+        "AvailabilitySetName": {
+            "type": "string",
+            "defaultValue": "AvailabilitySet"
+        },
+        "AvailabilitySetPlatformFaultDomainCount": {
+            "type": "int",
+            "defaultValue": 2
+        },
+        "AvailabilitySetPlatformUpdateDomainCount": {
+            "type": "int",
+            "defaultValue": 5
+        },
+        "AdminPassword": {
+            "type": "securestring"
+        },
+        "NumberVM": {
+            "type": "int",
+            "defaultValue": 1
+        }
+
+    },
+
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "secretName": "[concat(parameters('virtualMachineName'),'secret')]",
+
+        "secretsObject": {
+            "secrets": [						
+                {
+                    "secretName": "[concat(parameters('virtualMachineName'),'secret')]",
+                    "secretValue": "[parameters('AdminPassword')]"
+                }
+            ]
+        }
+    },
+
+
+    "resources": [
+        {
+           "apiVersion": "2017-05-10",
+           "name": "[concat('linkedTemplateKeyVaunt', parameters('NumberVM'))]",
+           "type": "Microsoft.Resources/deployments",
+          
+           
+           "properties": {
+             "mode": "Incremental",
+             "templateLink": {
+                "uri":"https://raw.githubusercontent.com/daniilkorytko/AzureLibrary/master/Create-KeyVault.json",
+                "contentVersion":"1.0.0.0"
+             },
+             
+             "parameters": {
+                "KeyVautsName":{"value": "[parameters('KeyVautsName')]"},
+                "location":{"value": "[variables('location')]"},
+                "sku":{"value": "[parameters('Sku')]"},
+                "accessPolicies":{"value": "[parameters('AccessPolicies')]"},
+                "tenant":{"value": "[parameters('Tenant')]"},
+                "enabledForDeployment":{"value": "[parameters('EnabledForDeployment')]"},
+                "enabledForTemplateDeployment":{"value": "[parameters('EnabledForTemplateDeployment')]"},
+                "enabledForDiskEncryption":{"value": "[parameters('EnabledForDiskEncryption')]"},
+                "networkAcls":{"value": "[parameters('NetworkAcls')]"},
+                "secretsObject":{"value": "[variables('secretsObject')]"}
+              }
+           }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "[concat('linkedTemplateVnet', parameters('NumberVM'))]",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+
+                "[concat('linkedTemplateKeyVaunt', parameters('NumberVM'))]"
+            ],
+            "properties": {
+              "mode": "Incremental",
+              "templateLink": {
+                 "uri":"https://raw.githubusercontent.com/daniilkorytko/AzureLibrary/master/Create-VNet.json",
+                 "contentVersion":"1.0.0.0"
+              },
+              "parameters": {
+                 "VnetName":{"value": "[parameters('VnetName')]"},
+                 "location":{"value": "[variables('location')]"},
+                 "addressPrefix":{"value": "[parameters('AddressPrefix')]"},
+                 "subnetFrontEnd":{"value": "[parameters('SubnetFrontEnd')]"},
+                 "subnetFrontEndAddressPrefix":{"value": "[parameters('SubnetFrontEndAddressPrefix')]"}
+               }
+               
+            }
+         },
+         {
+            "apiVersion": "2017-05-10",
+            "name": "[concat('linkedTemplateNSG', parameters('NumberVM'))]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+              "mode": "Incremental",
+              "templateLink": {
+                 "uri":"https://raw.githubusercontent.com/daniilkorytko/AzureLibrary/master/Create-NSG.json",
+                 "contentVersion":"1.0.0.0"
+              },
+              "parameters": {
+                "networkSecurityGroupName":{"value": "[parameters('NetworkSecurityGroupName')]"},
+                 "location":{"value": "[variables('location')]"},
+                 "networkSecurityGroupRules":{"value": "[parameters('NetworkSecurityGroupRules')]"}
+               }
+            }
+         },
+         {
+            "apiVersion": "2017-05-10",
+            "name": "[concat('linkedTemplatePubIp', parameters('NumberVM'))]",
+            "type": "Microsoft.Resources/deployments",
+
+            "properties": {
+              "mode": "Incremental",
+              "templateLink": {
+                 "uri":"https://raw.githubusercontent.com/daniilkorytko/AzureLibrary/master/Create-PublicIpAdress.json",
+                 "contentVersion":"1.0.0.0"
+              },
+              "parameters": {
+                "publicIpAddressName":{"value": "[parameters('PublicIpAddressName')]"},
+                 "location":{"value": "[variables('location')]"},
+                 "publicIpAddressType":{"value": "[parameters('PublicIpAddressType')]"},
+                 "publicIpAddressSku":{"value": "[parameters('PublicIpAddressSku')]"}
+               }
+            }
+         },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "[concat('linkedTemplateNetInterface', parameters('NumberVM'))]",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[concat('linkedTemplateNSG', parameters('NumberVM'))]",
+                "[concat('linkedTemplateVnet', parameters('NumberVM'))]",
+                "[concat('linkedTemplatePubIp', parameters('NumberVM'))]"
+
+            ],
+            "properties": {
+              "mode": "Incremental",
+              "templateLink": {
+                 "uri":"https://raw.githubusercontent.com/daniilkorytko/AzureLibrary/master/Create-NetInterface.json",
+                 "contentVersion":"1.0.0.0"
+              },
+              "parameters": {
+                "location":{"value": "[variables('location')]"},
+                "subnetFrontEnd":{"value": "[parameters('subnetFrontEnd')]"},
+                "networkInterfaceName":{"value": "[parameters('networkInterfaceName')]"},
+                "publicIpAddress": {"value": "[reference(concat('linkedTemplatePubIp', parameters('NumberVM'))).outputs.PubIp.value]"},
+                "nsgId": {"value": "[reference(concat('linkedTemplateNSG', parameters('NumberVM'))).outputs.nsgId.value]"},
+                "vnetId": {"value": "[reference(concat('linkedTemplateVnet', parameters('NumberVM'))).outputs.vnetId.value]"}
+
+               }
+            }
+         },
+         {
+            "apiVersion": "2017-05-10",
+            "name": "[concat('linkedTemplateDataDisk', parameters('NumberVM'))]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+              "mode": "Incremental",
+              "templateLink": {
+                 "uri":"https://raw.githubusercontent.com/daniilkorytko/AzureLibrary/master/Create-DataDisk.json",
+                 "contentVersion":"1.0.0.0"
+              },
+              "parameters": {
+                "dataDiskResources":{"value": "[parameters('DataDiskResources')]"},
+                "location":{"value": "[variables('location')]"}
+               }
+            }
+         },
+         {
+            "apiVersion": "2017-05-10",
+            "name": "[concat('linkedTemplateDataSAccAval', parameters('NumberVM'))]",
+            "type": "Microsoft.Resources/deployments",
+            
+            "properties": {
+              "mode": "Incremental",
+              "templateLink": {
+                 "uri":"https://raw.githubusercontent.com/daniilkorytko/AzureLibrary/master/Create-StorageAccountAvalSet.json",
+                 "contentVersion":"1.0.0.0"
+              },
+              "parameters": {
+                "diagnosticsStorageAccountName":{"value": "[parameters('DiagnosticsStorageAccountName')]"},
+                "location":{"value": "[variables('location')]"},
+                "diagnosticsStorageAccountKind":{"value": "[parameters('DiagnosticsStorageAccountKind')]"},
+                "diagnosticsStorageAccountType":{"value": "[parameters('DiagnosticsStorageAccountType')]"},
+                "availabilitySetName":{"value": "[parameters('AvailabilitySetName')]"},
+                "availabilitySetPlatformFaultDomainCount":{"value": "[parameters('AvailabilitySetPlatformFaultDomainCount')]"},
+                "availabilitySetPlatformUpdateDomainCount":{"value": "[parameters('AvailabilitySetPlatformUpdateDomainCount')]"}
+               }
+            }
+         },
+         {
+          
+            "apiVersion": "2017-05-10",
+            "name": "[concat('linkedTemplateDeployVM1', parameters('NumberVM'))]",
+            "type": "Microsoft.Resources/deployments",
+
+            "dependsOn": [
+                "[concat('linkedTemplateKeyVaunt', parameters('NumberVM'))]",
+                "[concat('linkedTemplateDataDisk', parameters('NumberVM'))]",
+                "[concat('linkedTemplateNetInterface', parameters('NumberVM'))]",
+                "[concat('linkedTemplateDataSAccAval', parameters('NumberVM'))]"
+               
+            ],
+            
+            "properties": {
+              "mode": "Incremental",
+              "templateLink": {
+                 "uri":"https://raw.githubusercontent.com/daniilkorytko/AzureLibrary/master/Create-VM.json",
+                 "contentVersion":"1.0.0.0"
+              },
+              "parameters": {
+
+                "virtualMachineName":{"value": "[parameters('VirtualMachineName')]"},
+                "location":{"value": "[variables('location')]"},
+                "osDiskType":{"value": "[parameters('OsDiskType')]"},
+                "dataDisks":{"value": "[parameters('DataDisks')]"},
+                "networkInterfaceName":{"value": "[parameters('NetworkInterfaceName')]"},
+                "virtualMachineSize":{"value": "[parameters('VirtualMachineSize')]"},
+                "adminUsername":{"value": "[parameters('AdminUsername')]"},
+                "diagnosticsStorageAccountName":{"value": "[parameters('DiagnosticsStorageAccountName')]"},
+                "availabilitySetName":{"value": "[parameters('AvailabilitySetName')]"},
+                "adminPassword": {
+                    "reference":  {
+
+                       "keyVault":  {"id": "[reference(concat('linkedTemplateKeyVaunt', parameters('NumberVM'))).outputs.KeyVaunts.value]"},
+                       "secretName": "[variables('secretName')]"
+                       
+                    }
+                  }
+               }
+            }
+         }
+    ]
+}
