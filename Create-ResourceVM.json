@@ -134,7 +134,7 @@
         },
         "DiagnosticsStorageAccountName": {
             "type": "string",
-            "defaultValue": "[toLower(concat(parameters('VirtualMachineName'),'_storageaccount'))]"
+            "defaultValue": "[toLower(concat(parameters('VirtualMachineName'),'storageaccount'))]"
         },
         "DiagnosticsStorageAccountType": {
             "type": "string",
