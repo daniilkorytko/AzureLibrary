@@ -213,10 +213,6 @@
             "apiVersion": "2017-05-10",
             "name": "[concat('linkedTemplateVnet', parameters('NumberVM'))]",
             "type": "Microsoft.Resources/deployments",
-            "dependsOn": [
-
-                "[concat('linkedTemplateKeyVaunt', parameters('NumberVM'))]"
-            ],
             "properties": {
               "mode": "Incremental",
               "templateLink": {
@@ -367,14 +363,27 @@
                 "availabilitySetName":{"value": "[parameters('AvailabilitySetName')]"},
                 "adminPassword": {
                     "reference":  {
-
-                       "keyVault":  {"id": "[reference(concat('linkedTemplateKeyVaunt', parameters('NumberVM'))).outputs.KeyVaunts.value]"},
-                       "secretName": "[variables('secretName')]"
-                       
+                        "keyVault":  {"id": "[reference(concat('linkedTemplateKeyVaunt', parameters('NumberVM'))).outputs.KeyVaunts.value]"},
+                        "secretName": "[variables('secretName')]"
+                       }
                     }
-                  }
-               }
+                }
             }
-         }
-    ]
+        }
+    ],
+    "outputs": {
+        "Logs":{
+            "type": "array",
+            "value": [
+                "[reference(concat('linkedTemplateKeyVaunt', parameters('NumberVM'))).outputs.Logs.value]",
+                "[reference(concat('linkedTemplateVnet', parameters('NumberVM'))).outputs.Logs.value]",
+                "[reference(concat('linkedTemplateNSG', parameters('NumberVM'))).outputs.Logs.value]",
+                "[reference(concat('linkedTemplatePubIp', parameters('NumberVM'))).outputs.Logs.value]",
+                "[reference(concat('linkedTemplateNetInterface', parameters('NumberVM'))).outputs.Logs.value]",
+                "[reference(concat('linkedTemplateDataDisk', parameters('NumberVM'))).outputs.Logs.value]",
+                "[reference(concat('linkedTemplateDataSAccAval', parameters('NumberVM'))).outputs.Logs.value]",
+                "[reference(concat('linkedTemplateDeployVM', parameters('NumberVM'))).outputs.Logs.value]"
+            ]
+        }
+    }
 }
