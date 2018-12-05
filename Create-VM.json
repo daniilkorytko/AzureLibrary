@@ -1,0 +1,118 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "VirtualMachineName": {
+            "type": "string"
+        },
+        "Location": {
+            "type": "string"
+        },
+        "OsDiskType": {
+            "type": "string"
+        },
+        "DataDisks": {
+            "type": "array"
+        },
+        "NetworkInterfaceName": {
+            "type": "string"
+        },
+        "VirtualMachineSize": {
+            "type": "string"
+        },
+        "AdminUsername": {
+            "type": "string"
+        },
+        "DiagnosticsStorageAccountName": {
+            "type": "string"
+        },
+        "AvailabilitySetName": {
+            "type": "string"
+        },
+        "AdminPassword": {
+            "type": "securestring"
+        }
+    },
+
+    "resources": [
+        {
+            "name": "[parameters('VirtualMachineName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2018-04-01",
+            "location": "[parameters('Location')]",
+
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('VirtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[parameters('osDiskType')]"
+                        }
+                    },
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
+                    },
+                    "copy": [
+                        {
+                            "name": "dataDisks",
+                            "count": "[length(parameters('DataDisks'))]",
+                            "input": {
+                                "lun": "[parameters('DataDisks')[copyIndex('dataDisks')].lun]",
+                                "createOption": "[parameters('DataDisks')[copyIndex('dataDisks')].createOption]",
+                                "caching": "[parameters('DataDisks')[copyIndex('dataDisks')].caching]",
+                                "writeAcceleratorEnabled": "[parameters('DataDisks')[copyIndex('dataDisks')].writeAcceleratorEnabled]",
+                                "managedDisk": {
+                                    "id": "[coalesce(parameters('DataDisks')[copyIndex('dataDisks')].id, if(equals(parameters('dataDisks')[copyIndex('dataDisks')].name, json('null')), json('null'), resourceId('Microsoft.Compute/disks', parameters('dataDisks')[copyIndex('dataDisks')].name)))]",
+                                    "storageAccountType": "[parameters('DataDisks')[copyIndex('dataDisks')].storageAccountType]"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('NetworkInterfaceName'))]"
+                        }
+                    ]
+                },
+
+                "osProfile": {
+                    "computerName": "[parameters('VirtualMachineName')]",
+                    "adminUsername": "[parameters('AdminUsername')]",
+                    
+                    
+                    "adminPassword": "[parameters('AdminPassword')]",
+
+                    "windowsConfiguration": {
+                        "enableAutomaticUpdates": true,
+                        "provisionVmAgent": true
+                    }
+                },
+                "licenseType": "Windows_Server",
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https://', parameters('diagnosticsStorageAccountName'), '.blob.core.windows.net/')]"
+                    }
+                },
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/AvailabilitySets', parameters('availabilitySetName'))]"
+                }
+            },
+            "tags": {}
+        }
+    ],
+    "outputs": {
+        "Logs":{
+            "type": "string",
+            "value": "[concat('VirtualMachine - ', parameters('VirtualMachineName'),'creation was successful')]"
+        }
+    }
+}

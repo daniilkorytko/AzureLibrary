@@ -1,0 +1,69 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "Location": {
+            "type": "string"
+        },
+        "SubnetFrontEnd": {
+            "type": "string"
+        },
+        "NetworkInterfaceName": {
+            "type": "string"
+        },
+        "PublicIpAddress": {
+            "type": "string"
+        },
+        "NsgId": {
+            "type": "string"
+        },
+        "VnetId": {
+            "type": "string"
+        }
+    },
+    "variables": {
+
+        "subnetRef": "[concat(parameters('VnetId'), '/subnets/', parameters('SubnetFrontEnd'))]"
+      
+       
+    },
+    "resources": [
+        {
+            "name": "[parameters('networkInterfaceName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2018-04-01",
+            "location": "[parameters('Location')]",
+
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('SubnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[parameters('PublicIpAddress')]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[parameters('NsgId')]"
+                }
+            },
+            "tags": {}
+        }
+    ],
+    "outputs": {
+        "NetIntId": {
+            "type": "string",
+            "value": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+        },
+        "Logs":{
+            "type": "string",
+            "value": "[concat('NetworkInterface - ', parameters('networkInterfaceName'),'creation was successful')]"
+        }
+    }
+}

@@ -1,0 +1,44 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "publicIpAddressName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "publicIpAddressType": {
+            "type": "string"
+        },
+        "publicIpAddressSku": {
+            "type": "string"
+        }
+
+    },
+    "resources": [
+        {
+            "name": "[parameters('publicIpAddressName')]",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2018-08-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "publicIpAllocationMethod": "[parameters('publicIpAddressType')]"
+            },
+            "sku": {
+                "name": "[parameters('publicIpAddressSku')]"
+            },
+            "tags": {}
+        }
+    ],
+    "outputs": {
+        "PubIp": {
+            "type": "string",
+            "value": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]"
+        },
+        "Logs":{
+            "type": "string",
+            "value": "[concat('PublicIpAddress - ', parameters('publicIpAddressName'),'creation was successful')]"
+        }
+    }
+}

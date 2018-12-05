@@ -1,0 +1,38 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "DataDiskResources": {
+            "type": "array"
+        },
+        "Location": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('dataDiskResources')[copyIndex()].name]",
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2018-04-01",
+            "location": "[parameters('Location')]",
+            "properties": {
+                "diskSizeGB": "[parameters('DataDiskResources')[copyIndex()].diskSizeGB]",
+                "creationData": "[parameters('DataDiskResources')[copyIndex()].creationData]"
+            },
+            "sku": {
+                "name": "[parameters('DataDiskResources')[copyIndex()].sku]"
+            },
+            "copy": {
+                "name": "managedDiskResources",
+                "count": "[length(parameters('dataDiskResources'))]"
+            },
+            "tags": {}
+        }
+    ],
+    "outputs": {
+        "Logs":{
+            "type": "string",
+            "value": "[concat('DataDisk - ', parameters('DataDiskResources')[copyIndex()].sku,'creation was successful')]"
+        }
+    }
+}

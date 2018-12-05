@@ -1,0 +1,57 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "VnetName": {
+            "type": "string"
+        },
+        "Location": {
+            "type": "string"
+        },
+        "AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16"
+        },
+        "SubnetFrontEnd": {
+            "type": "string"
+        },
+        "SubnetFrontEndAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.1.0/24"
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('VnetName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2018-08-01",
+            "location": "[parameters('Location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('AddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('SubnetFrontEnd')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('SubnetFrontEndAddressPrefix')]"
+                        }
+                    }
+                ]
+            },
+            "tags": {}
+        }
+    ],
+    "outputs": {
+        "vnetId": {
+            "type": "string",
+            "value": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', parameters('VnetName'))]"
+      },
+      "Logs":{
+            "type": "string",
+            "value": "[concat('VNet - ', parameters('VnetName'),'creation was successful')]"
+        }
+    }
+}

@@ -31,18 +31,26 @@
         "tenant": {
             "type": "string"
         },
-        "enabledForDeployment": {
-            "type": "bool"
+        "EnabledForDeployment": {
+            "type": "bool",
+            "defaultValue": true
         },
-        "enabledForTemplateDeployment": {
-            "type": "bool"
+        "EnabledForTemplateDeployment": {
+            "type": "bool",
+            "defaultValue": true
         },
-        "enabledForDiskEncryption": {
-            "type": "bool"
+        "EnabledForDiskEncryption": {
+            "type": "bool",
+            "defaultValue": false
         },
-        "networkAcls": {
-            "type": "object"
-
+        "NetworkAcls": {
+            "type": "object",
+            "defaultValue": {
+                "defaultAction": "Allow",
+                "bypass": "AzureServices",
+                "virtualNetworkRules": [],
+                "ipRules": []
+            }
         },
         "secretsObject": {
             "type": "secureObject",
@@ -88,6 +96,10 @@
         "KeyVaunts": {
           "type": "string",
           "value": "[resourceId(resourceGroup().name, 'Microsoft.KeyVault/vaults', parameters('KeyVautsName'))]"
+      },
+      "Logs":{
+          "type": "string",
+          "value": "[concat('KeyWault - ', parameters('KeyVautsName'),'creation was successful')]"
       }
     }
 }

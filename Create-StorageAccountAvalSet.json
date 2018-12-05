@@ -1,0 +1,69 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "DiagnosticsStorageAccountName": {
+            "type": "string"
+        },
+        "Location": {
+            "type": "string"
+        },
+        "DiagnosticsStorageAccountKind": {
+            "type": "string"
+        },
+        "DiagnosticsStorageAccountType": {
+            "type": "string"
+        },
+        "AvailabilitySetName": {
+            "type": "string"
+        },
+        "AvailabilitySetPlatformFaultDomainCount": {
+            "type": "int"
+        },
+        "AvailabilitySetPlatformUpdateDomainCount": {
+            "type": "int"
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('DiagnosticsStorageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2018-02-01",
+            "location": "[parameters('Location')]",
+            "properties": {},
+            "kind": "[parameters('DiagnosticsStorageAccountKind')]",
+            "sku": {
+                "name": "[parameters('DiagnosticsStorageAccountType')]"
+            },
+            "tags": {}
+        },
+        {
+            "name": "[parameters('AvailabilitySetName')]",
+            "type": "Microsoft.Compute/availabilitySets",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[parameters('location')]",
+            "properties": {
+                "platformFaultDomainCount": "[parameters('AvailabilitySetPlatformFaultDomainCount')]",
+                "platformUpdateDomainCount": "[parameters('AvailabilitySetPlatformUpdateDomainCount')]"
+            },
+            "sku": {
+                "name": "Aligned"
+            },
+            "tags": {}
+        }
+    ],
+    "outputs": {
+        "DiahSaName": {
+            "type": "string",
+            "value": "[resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', parameters('diagnosticsStorageAccountName'))]"
+        }, 
+        "AvalSetName": {
+            "type": "string",
+            "value": "[resourceId(resourceGroup().name, 'MMicrosoft.Compute/availabilitySets', parameters('availabilitySetName'))]"
+        },
+        "Logs":{
+            "type": "string",
+            "value": "[concat('StorageAccount - ', parameters('DiagnosticsStorageAccountName'),' and AvailabilitySet ',parameters('AvailabilitySetName'),'creation was successful')]"
+        }
+    }
+}

@@ -1,0 +1,37 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "NetworkSecurityGroupName": {
+            "type": "string"
+        },
+        "Location": {
+            "type": "string"
+        },
+        "NetworkSecurityGroupRules": {
+            "type": "array"
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('NetworkSecurityGroupName')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2018-08-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "securityRules": "[parameters('NetworkSecurityGroupRules')]"
+            },
+            "tags": {}
+        }
+    ],
+    "outputs": {
+        "nsgId": {
+            "type": "string",
+            "value": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', parameters('NetworkSecurityGroupName'))]"
+        },
+        "Logs":{
+            "type": "string",
+            "value": "[concat('NSG - ', parameters('NetworkSecurityGroupName'),'creation was successful')]"
+        }
+    }
+}
