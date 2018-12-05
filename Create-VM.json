@@ -61,7 +61,7 @@
                     },
                     "copy": [
                         {
-                            "name": "_dataDisks",
+                            "name": "dataDisks",
                             "count": "[length(parameters('DataDisks'))]",
                             "input": {
                                 "lun": "[parameters('DataDisks')[copyIndex('dataDisks')].lun]",
