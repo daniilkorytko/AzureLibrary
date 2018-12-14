@@ -1,0 +1,402 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "KeyVautName": {
+            "type": "string",
+            "maxLength" : 24,
+            "minLength" : 3,
+            "defaultValue": "[concat(parameters('VirtualMachineName'),'KeyVault')]"
+        },
+        "Sku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Standard",
+                "Premium"
+            ]//почему с маленькрой и большой
+        },
+        "AccessPolicies": {
+            "type": "array",
+            "defaultValue": []
+        },
+        "NetworkAcls": {
+            "type": "object",
+            "defaultValue": {
+                "defaultAction": "Allow",
+                "bypass": "AzureServices",
+                "virtualNetworkRules": [],
+                "ipRules": []
+            }// что это такое ???
+        },
+
+        "AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16"
+        },
+        "SubnetFrontEnd": {
+            "type": "string",
+            "defaultValue": "FrontEnd"
+        },
+        "SubnetFrontEndAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.1.0/24"
+        },
+        "NetworkSecurityGroupRules": {
+            "type": "array",
+            "defaultValue": []
+        },
+        "PublicIpAddressSku": {
+            "type": "string",
+            "allowedValues": [
+                "Standard",
+                "Basic",
+            ],
+            "defaultValue": "Basic"
+        },
+        "VirtualMachineName": {
+            "maxLength" : 16,
+            "minLength" : 3,
+            "type": "string"
+        },
+        "OsDiskType": {
+            "type": "string",
+            "defaultValue":  "Premium_LRS"
+            //если идеть премиум диск, то у нему можно присобачить только машнки с буквой s, иначе ошибка 
+        },
+        "DataDisks": {
+            "type": "array",
+            "defaultValue": [
+                {
+                    "lun": 0,
+                    "createOption": "attach",
+                    "caching": "None",
+                    "writeAcceleratorEnabled": false,
+                    "id": null,
+                    "name": "[concat(parameters('VirtualMachineName'),'_dataDisks')]" ,
+                    "storageAccountType": null
+                }
+            ]
+        },
+        "DataDiskResources": {
+            "type": "array",
+            "defaultValue": [
+                {
+                    "name": "[concat(parameters('VirtualMachineName'),'_dataDisks')]",
+                    "diskSizeGB": 32,
+                    "sku": "StandardSSD_LRS",
+                    "creationData": {
+                        "createOption": "empty"
+                    }
+                }
+            ]
+        },
+        "VirtualMachineSize": {
+            "type": "string",
+            "defaultValue": "Standard_D2s_v3"
+            //сайз машины должен соответствовать типу диска !!!!!
+        },
+        "AdminUsername": {
+            "type": "string"
+        },
+        "DiagnosticsStorageAccountType": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS",
+                "Standard_RA-GRS",
+                "Premium_LRS",
+                "Premium_ZRS",
+                "Premium_GRS",
+                "Premium_RA-GRS"
+            ],
+            "defaultValue": "Standard_LRS"
+        },
+        "AvailabilitySetPlatformFaultDomainCount": {
+            "type": "int",
+            "defaultValue": 2
+        },
+        "AvailabilitySetPlatformUpdateDomainCount": {
+            "type": "int",
+            "defaultValue": 5
+        },
+        "AdminPassword": {
+            "type": "securestring"
+        },
+        "imageReferencesku": {
+            "type": "string",
+            "defaultValue": "2016-Datacenter"
+        },
+        "imageReferenceversion": {
+            "type": "string",
+            "defaultValue": "latest"
+        }
+    },
+
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "secretsObject": {
+            "secrets": [						
+                {
+                    "secretName": "[concat(parameters('virtualMachineName'),'secret')]",
+                    "secretValue": "[parameters('AdminPassword')]"
+                }
+            ]
+        },
+        "Tenant": "b41b72d0-4e9f-4c26-8a69-f949f367c91d",
+        "VnetName": "[concat(parameters('VirtualMachineName'),'_Vnet')]",
+        "NetworkSecurityGroupName": "[concat(parameters('VirtualMachineName'),'_networkSecurityGroup')]",
+        "PublicIpAddressName": "[concat(parameters('VirtualMachineName'),'_publicIpAddress')]",
+        "NetworkInterfaceName": "[concat(parameters('VirtualMachineName'),'_networkInterface')]",
+        "DiagnosticsStorageAccountName": "[toLower(concat(parameters('VirtualMachineName'),'storgacc'))]",
+        "AvailabilitySetName": "[concat(parameters('VirtualMachineName'),'_AvailabilitySet')]"
+    },
+
+
+    "resources": [
+        //Creation KeyVault
+        {
+            "apiVersion": "2016-10-01",
+            "name": "[parameters('KeyVautName')]",
+            "location": "[variables('location')]",
+            "type": "Microsoft.KeyVault/vaults",
+            "properties": {
+                "enabledForDeployment": false,
+                "enabledForTemplateDeployment": true,
+                "enabledForDiskEncryption": false, 
+                "accessPolicies": "[parameters('accessPolicies')]",
+                "tenantId": "[variables('tenant')]",
+                "sku": {
+                    "name": "[parameters('sku')]",
+                    "family": "A"
+                },
+                "networkAcls": "[parameters('networkAcls')]"
+            }
+        },
+        //Creation Secrets
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('KeyVautName'), '/', variables('secretsObject').secrets[0].secretName)]",
+            "apiVersion": "2015-06-01",
+            "dependsOn": [
+                "[concat('Microsoft.KeyVault/vaults/', parameters('KeyVautName'))]"
+            ],
+            "properties": {
+              "value": "[variables('secretsObject').secrets[0].secretValue]"
+            }
+
+        },
+        //Creation NSG
+        {
+            "name": "[variables('NetworkSecurityGroupName')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2018-08-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "securityRules": "[parameters('NetworkSecurityGroupRules')]"
+            },
+            "tags": {}
+        },
+        //Creation VNet
+        {
+            "name": "[variables('VnetName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2018-08-01",
+            "location": "[variables('Location')]",
+            "dependsOn": [
+                "[variables('NetworkSecurityGroupName')]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('AddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('SubnetFrontEnd')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('SubnetFrontEndAddressPrefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', variables('NetworkSecurityGroupName'))]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "tags": {}
+        },
+        //Creation PubIp
+        {
+            "name": "[variables('publicIpAddressName')]",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2018-08-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "publicIpAllocationMethod": "Dynamic"
+            },
+            "sku": {
+                "name": "[parameters('publicIpAddressSku')]"
+            },
+            "tags": {}
+        },
+        //Creation NetInterface
+        {
+            "name": "[variables('networkInterfaceName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2018-04-01",
+            "location": "[variables('Location')]",
+
+            "dependsOn": [
+                "[variables('VnetName')]",
+                "[variables('publicIpAddressName')]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[concat(resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', variables('VnetName')), '/subnets/', parameters('SubnetFrontEnd'))]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "tags": {}
+        },
+        //Creation DataDisk
+        {
+            "name": "[parameters('dataDiskResources')[copyIndex()].name]",
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2018-04-01",
+            "location": "[variables('Location')]",
+            "properties": {
+                "diskSizeGB": "[parameters('DataDiskResources')[copyIndex()].diskSizeGB]",
+                "creationData": "[parameters('DataDiskResources')[copyIndex()].creationData]"
+            },
+            "sku": {
+                "name": "[parameters('DataDiskResources')[copyIndex()].sku]"
+            },
+            "copy": {
+                "name": "managedDiskResources",
+                "count": "[length(parameters('dataDiskResources'))]"
+            },
+            "tags": {}
+        },
+        //Creation StorageAccount
+        {
+            "name": "[variables('DiagnosticsStorageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('Location')]",
+            "properties": {},
+            "kind": "Storage",
+            "sku": {
+                "name": "[parameters('DiagnosticsStorageAccountType')]"
+            },
+            "tags": {}
+        },
+        //Creation AvalabilitySet
+        {
+            "name": "[variables('AvailabilitySetName')]",
+            "type": "Microsoft.Compute/availabilitySets",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[variables('location')]",
+            "properties": {
+                "platformFaultDomainCount": "[parameters('AvailabilitySetPlatformFaultDomainCount')]",
+                "platformUpdateDomainCount": "[parameters('AvailabilitySetPlatformUpdateDomainCount')]"
+            },
+            "sku": {
+                "name": "Aligned"
+            },
+            "tags": {}
+        },
+        //Creation VM
+         {
+            "name": "[parameters('VirtualMachineName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2018-04-01",
+            "location": "[variables('Location')]",
+            "dependsOn": [
+                "[parameters('KeyVautName')]",
+                "[parameters('dataDiskResources')[0].name]",
+                "[variables('networkInterfaceName')]",
+                "[variables('DiagnosticsStorageAccountName')]",
+                "[variables('AvailabilitySetName')]"
+               
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('VirtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[parameters('osDiskType')]"
+                        },
+                        "name": "[concat(parameters('VirtualMachineName'), '_osDisk')]"
+                    },
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "[parameters('imageReferencesku')]",
+                        "version": "[parameters('imageReferenceversion')]",
+                    },
+                    "copy": [
+                        {
+                            "name": "dataDisks",
+                            "count": "[length(parameters('DataDisks'))]",
+                            "input": {
+                                "lun": "[parameters('DataDisks')[copyIndex('dataDisks')].lun]",
+                                "createOption": "[parameters('DataDisks')[copyIndex('dataDisks')].createOption]",
+                                "caching": "[parameters('DataDisks')[copyIndex('dataDisks')].caching]",
+                                "writeAcceleratorEnabled": "[parameters('DataDisks')[copyIndex('dataDisks')].writeAcceleratorEnabled]",
+                                "managedDisk": {
+                                    "id": "[coalesce(parameters('DataDisks')[copyIndex('dataDisks')].id, if(equals(parameters('dataDisks')[copyIndex('dataDisks')].name, json('null')), json('null'), resourceId('Microsoft.Compute/disks', parameters('dataDisks')[copyIndex('dataDisks')].name)))]",
+                                    "storageAccountType": "[parameters('DataDisks')[copyIndex('dataDisks')].storageAccountType]"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('NetworkInterfaceName'))]"
+                        }
+                    ]
+                },
+
+                "osProfile": {
+                    "computerName": "[parameters('VirtualMachineName')]",
+                    "adminUsername": "[parameters('AdminUsername')]",
+                    
+                    
+                    "adminPassword": "[variables('secretsObject').secrets[0].secretValue]",
+
+                    "windowsConfiguration": {
+                        "enableAutomaticUpdates": true,
+                        "provisionVmAgent": true
+                    }
+                },
+                "licenseType": "Windows_Server",//ЛИЦЕНЗИИ ВООБЩЕ НЕЛЬЗЯ ТОЛКОМ ИСПОЛЬЗОВАТЬ !!!!!!! БЕЗ ПОДТВЕРЖДЕНИЯ НАЧАЛЬСТВА
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https://', variables('diagnosticsStorageAccountName'), '.blob.core.windows.net/')]"
+                    }
+                },
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/AvailabilitySets', variables('availabilitySetName'))]"
+                }
+            },
+            "tags": {}
+        }
+    ]
+}

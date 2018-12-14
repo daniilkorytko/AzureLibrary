@@ -2,25 +2,14 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "NetworkSecurityGroupRules": {
-            "value": [
-                {
-                
-                    "name": "default-allow-rdp",
-                    "properties": {
-                        "priority": 1000,
-                        "protocol": "TCP",
-                        "access": "Allow",
-                        "direction": "Inbound",
-                        "sourceApplicationSecurityGroups": [],
-                        "destinationApplicationSecurityGroups": [],
-                        "sourceAddressPrefix": "*",
-                        "sourcePortRange": "*",
-                        "destinationAddressPrefix": "*",
-                        "destinationPortRange": "3389"
-                    }
-                }
-            ]
+        "AdminPassword": {
+            "value": "Administrator1"
+        },
+        "AdminUsername": {
+            "value": "Administrator1"
+        },
+        "VirtualMachineName": {
+            "value": "DaniilKVM1"
         }
     }
 }
