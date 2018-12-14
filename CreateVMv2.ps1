@@ -38,7 +38,7 @@ $rdpRule = New-AzureRmNetworkSecurityRuleConfig -Name "rdp-rule" -Description "A
 #check keyVault
 $keyVaut = Get-AzureRmKeyVault -VaultName $KeyVautName -ResourceGroupName $ResourceGroupVM
 if($keyVaut -eq $null){
-    $keyVaut = New-AzureRmKeyVault -VaultName $KeyVautName -ResourceGroupName $ResourceGroupVM -Location $Location -EnabledForDeployment $true
+    $keyVaut = New-AzureRmKeyVault -VaultName $KeyVautName -ResourceGroupName $ResourceGroupVM -Location $Location -EnabledForDeployment
     Write-Host "KeyVaut $KeyVautName` has been created." -ForegroundColor Green
 }
 else{   Write-Host "KeyVaut $KeyVautName` has already been created." -ForegroundColor Yellow}
@@ -101,9 +101,12 @@ else{   Write-Host "AvailabilitySet $availabilitySetName` has already been creat
 
 #check diagnosticsStorageAccount
 
-$diagnosticsStorageAccount = New-AzureRmStorageAccount -ResourceGroupName $ResourceGroupVM -AccountName $diagnosticsStorageAccountName -Location $Location -SkuName Standard_GRS
-Write-Host "DiagnosticsStorageAccount $diagnosticsStorageAccountName` has been created." -ForegroundColor Green
-
+$diagnosticsStorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupVM -AccountName $diagnosticsStorageAccountName 
+if($diagnosticsStorageAccount -eq $null){
+    $diagnosticsStorageAccount = New-AzureRmStorageAccount -ResourceGroupName $ResourceGroupVM -AccountName $diagnosticsStorageAccountName -Location $Location -SkuName Standard_GRS
+    Write-Host "DiagnosticsStorageAccount $diagnosticsStorageAccount` has been created." -ForegroundColor Green
+}
+else{   Write-Host "DiagnosticsStorageAccount $diagnosticsStorageAccount` has already been created." -ForegroundColor Yellow}
 
 $credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (Get-AzureKeyVaultSecret -VaultName $KeyVautName -Name $secretName).SecretValue)
 $virtualMachine = New-AzureRmVMConfig -VMName $VirtualMachineName -VMSize $VirtualMachineSize -AvailabilitySetId $availabilitySet.Id
