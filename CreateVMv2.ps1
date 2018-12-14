@@ -3,7 +3,7 @@
     [string]$AdminUsername = "Administrator1",
     [string][ValidatePattern("^[a-zA-Z0-9-]{3,24}")]$KeyVautName = "DaniilKeyVault",
     [SecureString]$AdminPassword = $(ConvertTo-SecureString -String "Administrator1" -AsPlainText -Force ),
-    [string][ValidateLength(3,16)]$VirtualMachineName = "DaniilKVM",
+    [string][ValidateLength(3,19)]$VirtualMachineName = "DaniilKVM",
     [string]$Location = "westeurope",
     [string]$ResourceGroupVM = "DaniilK",
     [string]$SubnetFrontEndAddressPrefix = "10.0.0.0/24",
@@ -24,7 +24,7 @@ $networkSecurityGroupName = "$VirtualMachineName`_networkSecurityGroup"
 $publicIpAddressName = "$VirtualMachineName`_publicIpAddress"
 $networkInterfaceName = "$VirtualMachineName`_networkInterface"
 $availabilitySetName = "$VirtualMachineName`_AvailabilitySet"
-$diagnosticsStorageAccountName = "$VirtualMachineName`sac$(Get-Random -Maximum 99999)"
+$diagnosticsStorageAccountName = "$VirtualMachineName`stacc"
 $diagnosticsStorageAccountName = $diagnosticsStorageAccountName.ToLower()
 $dataDiskName = "$VirtualMachineName`_dataDisk"
 $secretName = "$VirtualMachineName`secret"
@@ -38,7 +38,7 @@ $rdpRule = New-AzureRmNetworkSecurityRuleConfig -Name "rdp-rule" -Description "A
 #check keyVault
 $keyVaut = Get-AzureRmKeyVault -VaultName $KeyVautName -ResourceGroupName $ResourceGroupVM
 if($keyVaut -eq $null){
-    $keyVaut = New-AzureRmKeyVault -VaultName $KeyVautName -ResourceGroupName $ResourceGroupVM -Location $Location
+    $keyVaut = New-AzureRmKeyVault -VaultName $KeyVautName -ResourceGroupName $ResourceGroupVM -Location $Location -EnabledForTemplateDeployment $true
     Write-Host "KeyVaut $KeyVautName` has been created." -ForegroundColor Green
 }
 else{   Write-Host "KeyVaut $KeyVautName` has already been created." -ForegroundColor Yellow}
@@ -47,7 +47,7 @@ else{   Write-Host "KeyVaut $KeyVautName` has already been created." -Foreground
 #check Secret
 $keyVautSecret = Get-AzureKeyVaultSecret -VaultName $keyVaut.VaultName -Name $secretName
 if($keyVautSecret -eq $null){
-    $keyVautSecret = Set-AzureKeyVaultSecret -VaultName $keyVaut.VaultName -Name $secretName -SecretValue $AdminPassword
+    $keyVautSecret = Set-AzureKeyVaultSecret -VaultName $keyVaut.VaultName -Name $secretName -SecretValue $AdminPassword 
     Write-Host "KeyVautSecret $secretName` has been created." -ForegroundColor Green
 }
 else{   Write-Host "KeyVautSecret $secretName` has already been created." -ForegroundColor Yellow}
@@ -100,6 +100,7 @@ else{   Write-Host "AvailabilitySet $availabilitySetName` has already been creat
 
 
 #check diagnosticsStorageAccount
+
 $diagnosticsStorageAccount = New-AzureRmStorageAccount -ResourceGroupName $ResourceGroupVM -AccountName $diagnosticsStorageAccountName -Location $Location -SkuName Standard_GRS
 Write-Host "DiagnosticsStorageAccount $diagnosticsStorageAccountName` has been created." -ForegroundColor Green
 
@@ -145,4 +146,3 @@ $virtualMachine = Set-AzureRmVMBootDiagnostics -VM $virtualMachine -Enable -Reso
 
 $vM = New-AzureRmVM -ResourceGroupName $ResourceGroupVM -Location $Location -VM $virtualMachine -Verbose 
 Write-Host "VirtualMachine $VirtualMachineName` has been created." -ForegroundColor Green
-
