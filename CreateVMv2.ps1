@@ -142,14 +142,7 @@ $virtualMachine = Set-AzureRmVMOSDisk -VM $virtualMachine -Name $oSDiskName -Cac
 $virtualMachine = Set-AzureRmVMBootDiagnostics -VM $virtualMachine -Enable -ResourceGroupName $ResourceGroupVM -StorageAccountName $diagnosticsStorageAccount.StorageAccountName
 
 
-$vM = Get-AzureRmVM -ResourceGroupName $ResourceGroupVM -Name $VirtualMachineName -ErrorAction SilentlyContinue
 
-if($vM -eq $null){
-    $vM = New-AzureRmVM -ResourceGroupName $ResourceGroupVM -Location $Location -VM $virtualMachine -Verbose 
-    Write-Host "VirtualMachine $VirtualMachineName` has been created." -ForegroundColor Green
-}
-else{
-    Update-AzureRmVM -ResourceGroupName $ResourceGroupVM -VM $virtualMachine
-    Write-Host "VirtualMachine $VirtualMachineName` has been updated." -ForegroundColor Yellow
-}
+$vM = New-AzureRmVM -ResourceGroupName $ResourceGroupVM -Location $Location -VM $virtualMachine -Verbose 
+Write-Host "VirtualMachine $VirtualMachineName` has been created." -ForegroundColor Green
 
