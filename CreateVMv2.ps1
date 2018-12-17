@@ -17,7 +17,7 @@
 )
 
 New-AzureRmResourceGroup -Name $ResourceGroupVM -Location $Location -Force
-
+Get-AzureRmContext
 
 #Creation variables
 $oSDiskName = "$VirtualMachineName`OSDisk"
