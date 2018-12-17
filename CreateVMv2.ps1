@@ -108,7 +108,8 @@ if($diagnosticsStorageAccount -eq $null){
 }
 else{   Write-Host "DiagnosticsStorageAccount $diagnosticsStorageAccount` has already been created." -ForegroundColor Yellow}
 
-$credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (Get-AzureKeyVaultSecret -VaultName $KeyVautName -Name $secretName).SecretValue)
+$credential = New-Object System.Management.Automation.PSCredential($AdminUsername,$AdminPassword)
+#$credential = New-Object System.Management.Automation.PSCredential($AdminUsername, (Get-AzureKeyVaultSecret -VaultName $KeyVautName -Name $secretName).SecretValue)
 $virtualMachine = New-AzureRmVMConfig -VMName $VirtualMachineName -VMSize $VirtualMachineSize -AvailabilitySetId $availabilitySet.Id
 
 
