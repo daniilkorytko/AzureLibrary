@@ -12,12 +12,9 @@
     [string]$VirtualMachineSize = "Standard_D2s_v3",
     [hashtable[]]$DataDisks = @(`
     @{DiskSizeGB=32;AccountType="Premium_LRS";},
-    @{DiskSizeGB=128;AccountType="Premium_LRS";}),
-    [hashtable[]]$NetInterfaces = @(@{},@{})#???
+    @{DiskSizeGB=128;AccountType="Premium_LRS";})
 )
 
-New-AzureRmResourceGroup -Name $ResourceGroupVM -Location $Location -Force
-Get-AzureRmContext
 
 #Creation variables
 $oSDiskName = "$VirtualMachineName`OSDisk"
@@ -30,6 +27,15 @@ $diagnosticsStorageAccountName = "$VirtualMachineName`stacc"
 $diagnosticsStorageAccountName = $diagnosticsStorageAccountName.ToLower()
 $dataDiskName = "$VirtualMachineName`_dataDisk"
 $secretName = "$VirtualMachineName`secret"
+
+
+$resourceGroup = Get-AzureRmResourceGroup -Name $ResourceGroupVM
+if($resourceGroup -eq $null){
+    New-AzureRmResourceGroup -Name $ResourceGroupVM -Location $Location 
+
+    Write-Host "ResourceGroup $ResourceGroupVM` has been created." -ForegroundColor Green
+}
+else{   Write-Host "ResourceGroup $ResourceGroupVM` has already been created." -ForegroundColor Yellow}
 
 
 $rdpRule = New-AzureRmNetworkSecurityRuleConfig -Name "rdp-rule" -Description "Allow RDP" `
