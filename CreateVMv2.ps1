@@ -103,7 +103,7 @@ else{   Write-Host "AvailabilitySet $availabilitySetName` has already been creat
 
 #check diagnosticsStorageAccount
 
-$diagnosticsStorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupVM -AccountName $diagnosticsStorageAccountName 
+$diagnosticsStorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupVM -AccountName $diagnosticsStorageAccountName -ErrorAction SilentlyContinue
 if($diagnosticsStorageAccount -eq $null){
     $diagnosticsStorageAccount = New-AzureRmStorageAccount -ResourceGroupName $ResourceGroupVM -AccountName $diagnosticsStorageAccountName -Location $Location -SkuName Standard_GRS
     Write-Host "DiagnosticsStorageAccount $diagnosticsStorageAccount` has been created." -ForegroundColor Green
