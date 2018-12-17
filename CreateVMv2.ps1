@@ -16,6 +16,8 @@
     [hashtable[]]$NetInterfaces = @(@{},@{})#???
 )
 
+New-AzureRmResourceGroup -Name $ResourceGroupVM -Location $Location -Force
+
 
 #Creation variables
 $oSDiskName = "$VirtualMachineName`OSDisk"
