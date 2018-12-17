@@ -41,6 +41,7 @@ $rdpRule = New-AzureRmNetworkSecurityRuleConfig -Name "rdp-rule" -Description "A
 $keyVaut = Get-AzureRmKeyVault -VaultName $KeyVautName -ResourceGroupName $ResourceGroupVM
 if($keyVaut -eq $null){
     $keyVaut = New-AzureRmKeyVault -VaultName $KeyVautName -ResourceGroupName $ResourceGroupVM -Location $Location
+    Set-AzureRmKeyVaultAccessPolicy –VaultName $KeyVautName –ObjectId $(Get-AzureRmContext).Account –PermissionsToSecrets get,list,set,delete,backup,restore,recover,purge 
     Write-Host "KeyVaut $KeyVautName` has been created." -ForegroundColor Green
 }
 else{   Write-Host "KeyVaut $KeyVautName` has already been created." -ForegroundColor Yellow}
