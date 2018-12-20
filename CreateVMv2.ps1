@@ -1,7 +1,7 @@
 ﻿Param(
 
     [string]$AdminUsername = "Administrator1",
-    [string][ValidatePattern("^[a-zA-Z0-9-]{3,24}")]$KeyVautName = "DaniilKeyVault",
+    [string][ValidatePattern("^[a-zA-Z0-9-]{3,24}")]$KeyVautName = "DaniilKVMKeyVault",
     [SecureString]$AdminPassword = $(ConvertTo-SecureString -String "Administrator1" -AsPlainText -Force ),
     [string][ValidateLength(3,19)]$VirtualMachineName = "DaniilKVM",
     [string]$Location = "westeurope",
